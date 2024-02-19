@@ -20,15 +20,16 @@ def main():
     client.post("🙂")
 
 
-# Scheduling the task
-scheduler = BlockingScheduler()
+if __name__ == '__main__':
+    # Scheduling the task
+    scheduler = BlockingScheduler()
 
-scheduleExpression = "0 */3 * * *"  # Run once every three hours in prod
-scheduleExpressionMinute = "* * * * *"  # Run once every minute for testing
+    scheduleExpression = "0 */3 * * *"  # Run once every three hours in prod
+    scheduleExpressionMinute = "* * * * *"  # Run once every minute for testing
 
-# Change to your preferred schedule for production
-scheduler.add_job(
-    main, "cron", minute="*"
-)
+    # Change to your preferred schedule for production
+    scheduler.add_job(
+        main, "cron", minute="*"
+    )
 
-scheduler.start()
+    scheduler.start()
