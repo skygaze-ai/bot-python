@@ -1,6 +1,6 @@
 # Bluesky Python Bot Tutorial
 
-This folder contains a starter template for creating a bot on Bluesky.
+This repository contains a starter template for creating a Python bot on Bluesky.
 
 ## Set Up
 
