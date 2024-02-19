@@ -15,12 +15,12 @@ BLUESKY_PASSWORD = os.getenv("BLUESKY_PASSWORD")
 client = Client("https://bsky.social")
 
 
-def main():
+def send_post():
     client.login(BLUESKY_USERNAME, BLUESKY_PASSWORD)
     client.post("🙂")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Scheduling the task
     scheduler = BlockingScheduler()
 
@@ -28,8 +28,6 @@ if __name__ == '__main__':
     scheduleExpressionMinute = "* * * * *"  # Run once every minute for testing
 
     # Change to your preferred schedule for production
-    scheduler.add_job(
-        main, "cron", minute="*"
-    )
+    scheduler.add_job(send_post, "cron", minute="*")
 
     scheduler.start()
