@@ -5,7 +5,7 @@ This folder contains a starter template for creating a bot on Bluesky.
 ## Set Up
 
 1. Make a copy of the example `.env` file by running: `cp .env.example .env`. Set your username and password in `.env`. Use an App Password.
-2. Create a new virtual environment with [`venv`](), [`poetry`](), or your personal favorite.
+2. Create a new virtual environment with [`venv`](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/) or your personal favorite.
 
 ## Running the script 
 1. You can run the script locally: `python3 main.py`. You should see a smiley emoji posted to your Bluesky account. 
