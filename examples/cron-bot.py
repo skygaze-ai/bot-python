@@ -21,13 +21,8 @@ def send_post():
 
 
 if __name__ == "__main__":
-    # Scheduling the task
     scheduler = BlockingScheduler()
-
-    scheduleExpression = "0 */3 * * *"  # Run once every three hours in prod
-    scheduleExpressionMinute = "* * * * *"  # Run once every minute for testing
 
     # Change to your preferred schedule for production
     scheduler.add_job(send_post, "cron", minute="*")
-
     scheduler.start()
