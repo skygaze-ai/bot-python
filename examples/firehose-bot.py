@@ -1,3 +1,5 @@
+import os
+
 from atproto import (
     CAR,
     AtUri,
@@ -7,10 +9,17 @@ from atproto import (
     models,
     parse_subscribe_repos_message,
 )
+from dotenv import load_dotenv
 
-client = Client()
-client.login('my-handle', 'my-password')
+# Load environment variables
+load_dotenv()
 
+# Bluesky credentials
+BLUESKY_USERNAME = os.getenv("BLUESKY_USERNAME")
+BLUESKY_PASSWORD = os.getenv("BLUESKY_PASSWORD")
+
+# Create a Bluesky client
+client = Client("https://bsky.social")
 firehose = FirehoseSubscribeReposClient()
 
 
@@ -42,9 +51,8 @@ def on_message_handler(message: firehose_models.MessageFrame) -> None:
             }
 
             if uri.collection == models.ids.AppBskyFeedPost:
-                
-                if 'bluesky' in record['text']:
-                    client.send_post(text='Hello World from Python!')
+                if "bluesky" in record["text"]:
+                    client.send_post(text="Hello World from Python!")
 
             # Process other types of events:
             # elif uri.collection == models.ids.AppBskyFeedLike:
@@ -62,10 +70,7 @@ def on_message_handler(message: firehose_models.MessageFrame) -> None:
             # Process update(s)
             continue
 
-if __name__ == '__main__':
-    firehose.start(on_message_handler)
-    
-    
-    
 
-    
+if __name__ == "__main__":
+    client.login(BLUESKY_USERNAME, BLUESKY_PASSWORD)
+    firehose.start(on_message_handler)
