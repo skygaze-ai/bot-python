@@ -46,16 +46,24 @@ def process_operation(
         }
 
         if uri.collection == models.ids.AppBskyFeedPost:
-            # here `record` is a post
-            # the uri is the post's unique identifier
-            # the did is the post author's unique identifier
-            # the post schema is defined here: https://github.com/bluesky-social/atproto/blob/main/lexicons/app/bsky/feed/post.json
+            if "hack-bot" in record["text"]:
+                # get some info about the poster, their posts, and the thread they tagged the bot in
+                poster_posts = client.get_author_feed(
+                    actor=record["author"], cursor=None, filter=None, limit=100
+                ).feed
+                poster_follows = client.get_follows(actor=record["author"]).follows
+                poster_profile = client.get_profile(actor=record["author"])
+                posts_in_thread = client.get_post_thread(uri=record["uri"])
 
-            # TODO: Add your logic to process the post here
-
-            # TODO(@cooper): Get the author's did, use the client to get the author's last 100 posts, and process them somehow
-            if "bluesky" in record["text"]:
-                client.send_post(text="Hello World from Python!")
+                # send a reply to the post
+                record_ref = {"uri": record["uri"], "cid": record["cid"]}
+                reply_ref = models.AppBskyFeedPost.ReplyRef(
+                    parent=record_ref, root=record_ref
+                )
+                client.send_post(
+                    reply_to=reply_ref,
+                    text=f"Hey, {poster_profile.display_name}. You have {len(poster_posts)} posts and {len(poster_follows)} follows. Your bio is: {poster_profile.description}. There are {len(posts_in_thread)} posts in the thread.",
+                )
 
         # elif uri.collection == models.ids.AppBskyFeedLike:
         #     print("Created like: ", record)
@@ -91,6 +99,7 @@ def on_message_handler(message: firehose_models.MessageFrame) -> None:
 
 def main() -> None:
     client.login(BLUESKY_USERNAME, BLUESKY_PASSWORD)
+    print("🤖 Bot is listening")
     firehose.start(on_message_handler)
 
 

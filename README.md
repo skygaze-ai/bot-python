@@ -14,7 +14,13 @@ This repository contains a starter template for creating a Python bot on Bluesky
 2. Generate an App Password for your bot account in [settings](https://bsky.app/settings/app-passwords) (this is just to protect your real password)
 3. Make a copy of the example `.env` file by running: `cp .env.example .env`
 4. Set your bot's username and app password in `.env`
-5. Create a new virtual environment with [`venv`](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/) or your personal favorite.
+5. Create a new virtual environment with [`venv`](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/) or your favorite package manager.
+
+Using venv:
+`python3 -m venv .venv`
+`source .venv/bin/activate`
+`pip install -r requirements.txt`
+When you're done: `deactivate`
 
 ## Running the script
 
