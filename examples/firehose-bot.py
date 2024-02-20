@@ -46,6 +46,14 @@ def process_operation(
         }
 
         if uri.collection == models.ids.AppBskyFeedPost:
+            # here `record` is a post
+            # the uri is the post's unique identifier
+            # the did is the post author's unique identifier
+            # the post schema is defined here: https://github.com/bluesky-social/atproto/blob/main/lexicons/app/bsky/feed/post.json
+
+            # TODO: Add your logic to process the post here
+
+            # TODO(@cooper): Get the author's did, use the client to get the author's last 100 posts, and process them somehow
             if "bluesky" in record["text"]:
                 client.send_post(text="Hello World from Python!")
 
@@ -67,6 +75,7 @@ def process_operation(
     return
 
 
+# No need to edit this function - it processes messages from the firehose
 def on_message_handler(message: firehose_models.MessageFrame) -> None:
     commit = parse_subscribe_repos_message(message)
     if not isinstance(
