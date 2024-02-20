@@ -46,10 +46,14 @@ def process_operation(
         }
 
         if uri.collection == models.ids.AppBskyFeedPost:
-            # here `record` is a post
-            # the uri is the post's unique identifier
-            # the did is the post author's unique identifier
-            # the post schema is defined here: https://github.com/bluesky-social/atproto/blob/main/lexicons/app/bsky/feed/post.json
+            # =================================================================
+            #  Here `record` is a post.
+            #  The record's URI is the post's unique identifier
+            #  The record's DID is the post author's unique identifier
+            #
+            #  The post schema is defined here: 
+            #  https://github.com/bluesky-social/atproto/blob/main/lexicons/app/bsky/feed/post.json
+            # =================================================================
 
             # TODO: Add your logic to process the post here
 
