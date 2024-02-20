@@ -19,7 +19,7 @@ This repository contains a starter template for creating a Python bot on Bluesky
 ## Running the script
 
 1. You can run the script locally: `python3 main.py`. You should see a smiley emoji posted to your Bluesky account.
-2. Modify the script however you like to make this bot your own -- check out examples in `/examples`
+2. Modify the script however you like to make this bot your own. The `/examples` director has `firehose-bot.py` and `cron-bot.py` - if you want your bot to respond to some kind of event live, you want firehose-bot. If instead you want to do something on a timer, use cron-bot. You might also want to do something that's kind of both (i.e. it listens to the websocket to index/aggregate data and then does something on a schedule, like say what the sentiment is for a given search term)
 
 ## Deploying your bot
 
