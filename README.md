@@ -29,4 +29,4 @@ When you're done: `deactivate`
 
 ## Deploying your bot
 
-For demos, it's simplest to keep your computer running and just run the bot locally (`python3 main.py`). When you want to deploy it for real, there are many free or low cost cloud hosting options. For example, check out [Heroku](https://devcenter.heroku.com/articles/github-integration) or [Fly.io](https://fly.io/docs/reference/fly-launch/).
+For development, it's simplest to just run the bot locally (`python3 main.py`). When you want to deploy it for real, there are many free or low cost cloud hosting options like [Heroku](https://devcenter.heroku.com/articles/github-integration) or [Fly.io](https://fly.io/docs/reference/fly-launch/).
