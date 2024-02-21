@@ -22,6 +22,12 @@ Using venv:
 `pip install -r requirements.txt`
 When you're done: `deactivate`
 
+## Data
+
+Data availability is a huge perk of atproto--data can be accessed by crawling the repos yourself, ingesting the firehose, querying bluesky's AppView, or querying someone else's service (like a labeler or feed generator).
+
+For convenience we included samples of tables in `data/`. These are just samples, not the full tables. For the sake of example and so you can reason about the characteristics of the samples you got, we included `example/crawl.py` which is the script that generated the follows sample (and corresponding profiles). Feel free to generate your own sample by modifying `example/crawl.py`.
+
 ## Running the script
 
 1. You can run the script locally: `python3 main.py`. You should see a smiley emoji posted to your Bluesky account.
