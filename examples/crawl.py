@@ -13,9 +13,9 @@ BLUESKY_USERNAME = os.getenv("BLUESKY_USERNAME")
 BLUESKY_PASSWORD = os.getenv("BLUESKY_PASSWORD")
 
 SEED_REPO = "cooperedmunds.bsky.social"
-BRANCH_FACTOR = 15
-MAX_DEPTH = 4
-QPS = 5
+BRANCH_FACTOR = 2
+MAX_DEPTH = 1
+QPS_est = 5
 
 # Create a Bluesky client
 client = Client("https://bsky.social")
@@ -23,37 +23,37 @@ client = Client("https://bsky.social")
 
 def crawl() -> tuple[list, list]:
     # print estimate
-    est_follows_count = BRANCH_FACTOR**MAX_DEPTH
-    est_time = (BRANCH_FACTOR ** (MAX_DEPTH - 1) / QPS) / 60
-    print(
-        f"This crawl will get <{est_follows_count} follows in {round(est_time, 2)} minutes"
-    )
+    reqs_count = BRANCH_FACTOR ** (MAX_DEPTH - 1) + (BRANCH_FACTOR**MAX_DEPTH) * 5
+    est_time = reqs_count / QPS_est / 60
+    print(f"This crawl will make ~{reqs_count} reqs in {round(est_time, 2)} minutes")
 
     # get did for seed repo handle
     seed_did = client.resolve_handle(handle=SEED_REPO).did
 
-    all_follows = []
-    profiles = {}
+    follows = []
+    profiles_dict = {}
 
-    current_round_of_dids = {seed_did}
-    crawled_dids = set()
-    queued_dids = set()
-    depth = 1
+    current_round_dids = {seed_did}
+    already_crawled_dids = set()
+    next_round_dids = set()
+    current_depth = 1
 
     # iterate
-    while depth <= MAX_DEPTH:
-        print(f"Starting round {depth}")
+    while current_depth <= MAX_DEPTH:
+        print(f"Starting round {current_depth}")
 
-        for did in current_round_of_dids:
+        for did in current_round_dids:
             # get follows
             try:
-                follows = client.get_follows(actor=did).follows
+                actor_follows = client.get_follows(actor=did).follows
 
-                sampled_follows = sample(follows, min(BRANCH_FACTOR, len(follows)))
+                sampled_follows = sample(
+                    actor_follows, min(BRANCH_FACTOR, len(actor_follows))
+                )
                 for follow in sampled_follows:
                     # print(follow)
-                    all_follows.append({"did": did, "subject_did": follow.did})
-                    profiles[follow.did] = {
+                    follows.append({"did": did, "subject_did": follow.did})
+                    profiles_dict[follow.did] = {
                         "did": follow.did,
                         "handle": follow.handle,
                         "display_name": follow.display_name,
@@ -62,23 +62,90 @@ def crawl() -> tuple[list, list]:
 
                     # add new did to queue
                     if (
-                        follow.did not in crawled_dids
-                        and follow.did not in current_round_of_dids
+                        follow.did not in already_crawled_dids
+                        and follow.did not in current_round_dids
                     ):
-                        queued_dids.add(follow.did)
+                        next_round_dids.add(follow.did)
             except Exception:
-                follows = []
+                actor_follows = []
 
         # update
-        crawled_dids.update(current_round_of_dids)
-        current_round_of_dids = queued_dids
-        queued_dids = set()
-        depth += 1
+        already_crawled_dids.update(current_round_dids)
+        current_round_dids = next_round_dids
+        next_round_dids = set()
+        current_depth += 1
 
-    return all_follows, list(profiles.values())
+    profiles = list(profiles_dict.values())
+
+    # get posts, reposts, likes, blocks
+    posts = []
+    reposts = []
+    likes = []
+    blocks = []
+
+    for profile in profiles:
+        did = profile["did"]
+        try:
+            posts += get_posts(did)
+            reposts += get_reposts
+            likes += get_likes(did)
+            blocks += get_blocks(did)
+        except Exception as e:
+            print(e)
+            pass
+
+    return follows, profiles, posts, likes, blocks
 
 
-def write_to_csv(follows, profiles):
+def get_posts(did):
+    try:
+        return client.get_author_feed(actor=did, limit=50).feed
+    except Exception as e:
+        print(e)
+        return []
+
+
+def get_blocks(did):
+    try:
+        return client.app.bsky.graph.get_blocks(actor=did, limit=50).blocks
+    except Exception as e:
+        print(e)
+        return []
+
+
+def get_reposts(did):
+    try:
+        repost_records = client.com.atproto.repo.list_records(
+            params={
+                "repo": did,
+                "collection": "app.bsky.feed.repost",
+                "limit": 50,
+            }
+        ).records
+        # transform them
+        return repost_records
+    except Exception as e:
+        print(e)
+        return []
+
+
+def get_likes(did):
+    try:
+        like_records = client.com.atproto.repo.list_records(
+            params={
+                "repo": did,
+                "collection": "app.bsky.feed.like",
+                "limit": 50,
+            }
+        ).records
+        # transform them
+        return like_records
+    except Exception as e:
+        print(e)
+        return []
+
+
+def write_to_csv(follows, profiles, posts, likes, blocks):
     # write to csv
     with open("data/sampled_follows.csv", "w") as f:
         f.write("did,subject_did\n")
@@ -99,11 +166,32 @@ def write_to_csv(follows, profiles):
                 ]
             )
 
+    with open("data/sampled_posts.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        writer.writerow(["uri", "cid", "author", "text"])
+
+        for post in posts:
+            writer.writerow([post.uri, post.cid, post.author, post.text])
+
+    with open("data/sampled_likes.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        writer.writerow(["uri", "cid", "author", "liker"])
+
+        for like in likes:
+            writer.writerow([like.uri, like.cid, like.author, like.liker])
+
+    with open("data/sampled_blocks.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        writer.writerow(["uri", "cid", "author", "reposter"])
+
+        for block in blocks:
+            writer.writerow([block.uri, block.cid, block.author, block.reposter])
+
 
 def main() -> None:
     client.login(BLUESKY_USERNAME, BLUESKY_PASSWORD)
-    follows, profiles = crawl()
-    write_to_csv(follows, profiles)
+    follows, profiles, posts, likes, reposts = crawl()
+    write_to_csv(follows, profiles, posts, likes, reposts)
 
 
 if __name__ == "__main__":
