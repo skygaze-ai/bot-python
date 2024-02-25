@@ -44,7 +44,7 @@ class FirehoseBot:
                 messages=messages, 
             )
 
-        print(response.choices[0].message.content)
+        return response.choices[0].message.content
 
     def process_operation(self, op: models.ComAtprotoSyncSubscribeRepos.RepoOp, car: CAR, commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> None:
         uri = AtUri.from_str(f"at://{commit.repo}/{op.path}")
@@ -70,43 +70,16 @@ class FirehoseBot:
                 # Just for fun :)
                 # Delete before actually using
                 if "translate-bot" in record["text"].lower():
-                    print(record['text'])
-                    print(self.translate_in_native_language(record['text'], 'japanese'))
 
-            
-                if "hack-bot" in record["text"]:
-                    # get some info about the poster, their posts, and the thread they tagged the bot in
-                    poster_posts = client.get_author_feed(
-                        actor=record["author"], cursor=None, filter=None, limit=100
-                    ).feed
-                    poster_follows = client.get_follows(actor=record["author"]).follows
-                    poster_profile = client.get_profile(actor=record["author"])
-                    posts_in_thread = client.get_post_thread(uri=record["uri"])
+                    print(f"original text: {record['text']}")
 
-                    # send a reply to the post
-                    record_ref = {"uri": record["uri"], "cid": record["cid"]}
-                    reply_ref = models.AppBskyFeedPost.ReplyRef(
-                        parent=record_ref, root=record_ref
-                    )
-                    client.send_post(
-                        reply_to=reply_ref,
-                        text=f"Hey, {poster_profile.display_name}. You have {len(poster_posts)} posts and {len(poster_follows)} follows. Your bio is: {poster_profile.description}. There are {len(posts_in_thread)} posts in the thread.",
-                    )
+                    # translate text
+                    translated_text = self.translate_in_native_language(record['text'], 'japanese')
+                    print(f"translated text: {translated_text}")
 
-            # elif uri.collection == models.ids.AppBskyFeedLike:
-            #     print("Created like: ", record)
-            # elif uri.collection == models.ids.AppBskyFeedRepost:
-            #     print("Created repost: ", record)
-            # elif uri.collection == models.ids.AppBskyGraphFollow:
-            #     print("Created follow: ", record)
-
-        if op.action == "delete":
-            # Process delete(s)
-            return
-
-        if op.action == "update":
-            # Process update(s)
-            return
+                    # post translated text
+                    self.client.post(translated_text)
+                    print(f"posted translated text!")
 
         return
 
