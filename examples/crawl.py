@@ -1,9 +1,9 @@
-import os
 import csv
+import os
+from random import sample
 
 from atproto import Client
 from dotenv import load_dotenv
-from random import sample
 
 # Load environment variables
 load_dotenv()
@@ -13,8 +13,8 @@ BLUESKY_USERNAME = os.getenv("BLUESKY_USERNAME")
 BLUESKY_PASSWORD = os.getenv("BLUESKY_PASSWORD")
 
 SEED_REPO = "cooperedmunds.bsky.social"
-BRANCH_FACTOR = 10
-MAX_DEPTH = 3
+BRANCH_FACTOR = 50
+MAX_DEPTH = 2
 QPS_est = 5
 
 # Create a Bluesky client
@@ -46,6 +46,7 @@ def crawl() -> tuple[list, list, list, list, list, list]:
             # get follows
             try:
                 actor_follows = get_follows(did)
+                print(did, 'follows', len(actor_follows))
 
                 for follow in actor_follows:
                     subject_did = follow["subject"]
@@ -60,7 +61,7 @@ def crawl() -> tuple[list, list, list, list, list, list]:
                     ):
                         next_round_dids.add(subject_did)
             except Exception as e:
-                print(e)
+                print(e.content.message)
                 actor_follows = []
 
         # update
