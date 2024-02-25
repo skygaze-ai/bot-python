@@ -44,8 +44,14 @@ def process_operation(
             "author": commit.repo,
             **record,
         }
+    
 
         if uri.collection == models.ids.AppBskyFeedPost:
+            # This logs the text of every post off the firehose.
+            # Just for fun :)
+            # Delete before actually using
+            print(record['text'])
+        
             if "hack-bot" in record["text"]:
                 # get some info about the poster, their posts, and the thread they tagged the bot in
                 poster_posts = client.get_author_feed(
