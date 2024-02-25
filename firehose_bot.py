@@ -9,6 +9,7 @@ from atproto import (
     parse_subscribe_repos_message,
 )
 from dotenv import load_dotenv
+from openai import OpenAI
 
 class FirehoseBot:
     def __init__(self):
@@ -22,6 +23,28 @@ class FirehoseBot:
         # Create a Bluesky client
         self.client = Client("https://bsky.social")
         self.firehose = FirehoseSubscribeReposClient()
+
+        OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+        self.llm_client = OpenAI(api_key=OPENAI_API_KEY) 
+
+    def translate_in_native_language(self, content, language):
+        system_message = f"""\
+        You are the translation expert. Translate {content} into {language}.\
+        When translating, please keep as much nuance as possible. \
+        Please do not change emojis, etc. as they are.\
+        If there are any expressions that are too offensive, vulgar, or otherwise inappropriate, \
+        please modify them to softer expressions.
+        """
+
+        messages = [{'role': 'system', 'content': system_message}, 
+                    {"role": "user", "content": content}]
+
+        response = self.llm_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages, 
+            )
+
+        print(response.choices[0].message.content)
 
     def process_operation(self, op: models.ComAtprotoSyncSubscribeRepos.RepoOp, car: CAR, commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> None:
         uri = AtUri.from_str(f"at://{commit.repo}/{op.path}")
@@ -46,7 +69,10 @@ class FirehoseBot:
                 # This logs the text of every post off the firehose.
                 # Just for fun :)
                 # Delete before actually using
-                print(record['text'])
+                if "translate-bot" in record["text"].lower():
+                    print(record['text'])
+                    print(self.translate_in_native_language(record['text'], 'japanese'))
+
             
                 if "hack-bot" in record["text"]:
                     # get some info about the poster, their posts, and the thread they tagged the bot in
