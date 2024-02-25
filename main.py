@@ -2,6 +2,7 @@ import os
 
 from atproto import Client
 from dotenv import load_dotenv
+from firehose_bot import FirehoseBot
 
 # Load environment variables
 load_dotenv()
@@ -16,7 +17,10 @@ client = Client("https://bsky.social")
 
 def main():
     client.login(BLUESKY_USERNAME, BLUESKY_PASSWORD)
-    client.post("🙂")
+    bot = FirehoseBot()
+    bot.start()
+    firehose = bot.get_firehose()
+    # client.post("🙂")
 
 
 if __name__ == "__main__":
