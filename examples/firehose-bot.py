@@ -62,10 +62,9 @@ def process_operation(
                 posts_in_thread = client.get_post_thread(uri=record["uri"])
 
                 # send a reply to the post
-                record_ref = {"uri": record["uri"], "cid": record["cid"]}
-                reply_ref = models.AppBskyFeedPost.ReplyRef(
-                    parent=record_ref, root=record_ref
-                )
+                 parent_ref = {"uri": record["reply"]["parent"]["uri"], "cid": record["reply"]["parent"]["cid"]}
+                root_ref = {"uri": record["reply"]["root"]["uri"], "cid": record["reply"]["root"]["cid"]}
+                reply_ref = models.AppBskyFeedPost.ReplyRef(parent=parent_ref, root=root_ref)
                 client.send_post(
                     reply_to=reply_ref,
                     text=f"Hey, {poster_profile.display_name}. You have {len(poster_posts)} posts and {len(poster_follows)} follows. Your bio is: {poster_profile.description}. There are {len(posts_in_thread)} posts in the thread.",
